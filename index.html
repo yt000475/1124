@@ -1,0 +1,353 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>撲克微陣</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700;900&family=Orbitron:wght@500;700;900&display=swap">
+<style>
+/* Layout: 賽博霓虹桌遊盒風格。上方標題銘牌,下方手機單欄 / 桌機左側主操作區 + 右側計分與紀錄 */
+:root{
+  --bg:#0A0E24; --panel:#12183A; --ink:#E8F1FF; --muted:#8FA3C7; --line:rgba(61,224,245,.28);
+  --cyan:#3DE0F5; --magenta:#E64BD8; --orange:#FF9A3D; --red:#FF5E7E; --violet:#6C8CFF; --good:#5FE3A1;
+  --sans:"Noto Sans TC","PingFang TC","Microsoft JhengHei",system-ui,sans-serif;
+  --disp:"Orbitron","Noto Sans TC",system-ui,sans-serif;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+body{
+  color:var(--ink);font:15px/1.6 var(--sans);
+  background:
+    radial-gradient(900px 520px at 88% -8%,rgba(230,75,216,.30),transparent 62%),
+    radial-gradient(820px 520px at -4% 8%,rgba(61,224,245,.22),transparent 62%),
+    linear-gradient(180deg,#0A0E24,#0C1030 60%,#080B1C);
+  background-color:var(--bg);background-attachment:fixed;
+  padding-block:16px 36px;
+  padding-left:max(16px,env(safe-area-inset-left,0px));
+  padding-right:max(16px,env(safe-area-inset-right,0px));
+}
+body::after{
+  content:"";position:fixed;left:0;right:0;bottom:0;height:42vh;pointer-events:none;z-index:0;
+  background:
+    repeating-linear-gradient(0deg,rgba(61,224,245,.09) 0 1px,transparent 1px 30px),
+    repeating-linear-gradient(90deg,rgba(61,224,245,.09) 0 1px,transparent 1px 30px);
+  -webkit-mask-image:linear-gradient(to top,#000,transparent);mask-image:linear-gradient(to top,#000,transparent);
+}
+button{font:inherit;color:inherit}
+.wrap{position:relative;z-index:1;max-width:1000px;margin:0 auto;display:grid;gap:16px}
+
+/* 標題銘牌 */
+.hero{display:grid;gap:12px;justify-items:center}
+.plate{position:relative;width:100%;max-width:620px;text-align:center;padding:16px 20px 14px;border-radius:14px;
+  border:2px solid var(--cyan);
+  background:linear-gradient(180deg,rgba(14,60,92,.75),rgba(10,22,56,.9));
+  box-shadow:0 0 0 1px rgba(61,224,245,.25),0 0 28px rgba(61,224,245,.35),inset 0 0 28px rgba(61,224,245,.12)}
+.plate::before,.plate::after{content:"";position:absolute;top:50%;width:16px;height:16px;border:2px solid var(--cyan);background:var(--bg);transform:translateY(-50%) rotate(45deg);box-shadow:0 0 10px rgba(61,224,245,.7)}
+.plate::before{left:-10px}.plate::after{right:-10px}
+.plate h1{margin:0;font:900 clamp(2.2rem,9vw,3.6rem)/1.05 var(--sans);letter-spacing:.08em;
+  background:linear-gradient(180deg,#FFFFFF 12%,#B8F3FF 52%,#58B5FF 100%);-webkit-background-clip:text;background-clip:text;color:transparent;
+  filter:drop-shadow(0 0 10px rgba(61,224,245,.55))}
+.plate .en{font:700 clamp(.62rem,2.4vw,.8rem)/1.4 var(--disp);letter-spacing:.2em;color:var(--cyan);margin-top:2px}
+.plate .tag{margin-top:6px;font:900 clamp(1rem,4vw,1.25rem)/1.3 var(--sans);letter-spacing:.12em;
+  background:linear-gradient(180deg,#FFF3B0,#FFB347);-webkit-background-clip:text;background-clip:text;color:transparent;filter:drop-shadow(0 0 6px rgba(255,154,61,.5))}
+.suits{display:flex;gap:18px;justify-content:center;font-size:1.3rem;line-height:1;margin-bottom:6px}
+.suits .r{color:var(--red);text-shadow:0 0 10px rgba(255,94,126,.8)}
+.suits .b{color:var(--cyan);text-shadow:0 0 10px rgba(61,224,245,.8)}
+.hero:not(.big) .plate{display:flex;align-items:baseline;justify-content:center;gap:6px 16px;flex-wrap:wrap;padding:10px 20px}
+.hero:not(.big) .plate h1{font-size:clamp(1.7rem,6vw,2.3rem)}
+.hero:not(.big) .suits{display:none}
+.hero:not(.big) .plate .tag{margin-top:0;font-size:.95rem}
+.tools{display:flex;gap:8px;flex-wrap:wrap;justify-content:center}
+
+/* 按鈕 */
+.btn{border:1px solid rgba(61,224,245,.45);background:rgba(18,28,70,.7);border-radius:8px;padding:9px 18px;cursor:pointer;font-weight:700;min-height:42px;transition:box-shadow .15s,border-color .15s}
+.btn:hover{border-color:var(--cyan);box-shadow:0 0 14px rgba(61,224,245,.45)}
+.btn.primary{border:0;color:#06101F;font-weight:900;background:linear-gradient(120deg,#2EE6F5,#6C8CFF 58%,#E64BD8);box-shadow:0 0 18px rgba(108,140,255,.5)}
+.btn.primary:hover{box-shadow:0 0 26px rgba(61,224,245,.75)}
+.btn.sm{min-height:34px;padding:3px 12px;font-size:.85rem}
+.btn:disabled{opacity:.4;cursor:not-allowed;box-shadow:none}
+.btn:focus-visible,.stepper button:focus-visible,.adj button:focus-visible{outline:3px solid var(--orange);outline-offset:2px}
+
+/* 面板 */
+.panel{position:relative;background:linear-gradient(160deg,rgba(26,34,78,.88),rgba(14,18,46,.92));border:1px solid var(--line);border-radius:8px;padding:16px;
+  box-shadow:0 0 26px rgba(61,224,245,.07),inset 0 0 34px rgba(120,80,255,.06)}
+.panel::before,.panel::after{content:"";position:absolute;width:16px;height:16px;pointer-events:none}
+.panel::before{top:-1px;left:-1px;border-top:2px solid var(--cyan);border-left:2px solid var(--cyan);border-top-left-radius:8px}
+.panel::after{bottom:-1px;right:-1px;border-bottom:2px solid var(--magenta);border-right:2px solid var(--magenta);border-bottom-right-radius:8px}
+.label{font:700 .68rem/1 var(--disp);letter-spacing:.2em;color:var(--cyan);margin:0 0 10px;display:block}
+
+/* 版面 */
+.layout{display:grid;gap:16px;grid-template-columns:minmax(0,1fr);grid-template-areas:"s" "m" "l"}
+.a-scores{grid-area:s}.a-main{grid-area:m;display:grid;gap:16px;align-content:start}.a-log{grid-area:l}
+@media (min-width:900px){
+  .layout{grid-template-columns:minmax(0,1fr) 300px;grid-template-areas:"m s" "m l";align-items:start}
+  .scores{flex-direction:column}
+}
+
+/* 計分板 */
+.scores{display:flex;gap:10px;flex-wrap:wrap}
+.pl{position:relative;flex:1 1 140px;min-width:0;background:rgba(14,20,52,.85);border:1px solid var(--line);border-radius:8px;padding:10px 14px;display:grid;gap:2px}
+.pl.cur{border-color:var(--cyan);box-shadow:0 0 18px rgba(61,224,245,.5),inset 0 0 18px rgba(61,224,245,.12)}
+.pl .now{position:absolute;top:8px;right:10px;font:700 .6rem var(--disp);letter-spacing:.18em;color:var(--cyan)}
+.pl .nm{font-size:.82rem;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;padding-right:44px}
+.pl .sc{font:900 1.9rem/1.15 var(--disp);font-variant-numeric:tabular-nums;color:#fff;text-shadow:0 0 12px rgba(61,224,245,.55)}
+.pl .fl{font-size:.74rem;color:var(--orange);min-height:1.15em}
+.adj{display:flex;gap:6px}
+.adj button{border:1px solid var(--line);background:rgba(8,12,34,.8);border-radius:6px;width:34px;height:30px;cursor:pointer;line-height:1}
+.adj button:hover{border-color:var(--cyan);box-shadow:0 0 8px rgba(61,224,245,.5)}
+
+/* 回合與事件 */
+.prompt{display:grid;gap:14px}
+.prompt p{margin:0}
+.turn{font-size:.9rem;color:var(--muted)}
+.turn b{color:#fff;font-size:1.2rem}
+.row{display:flex;gap:8px;flex-wrap:wrap}
+.ev{border-color:rgba(255,154,61,.55);background:linear-gradient(160deg,rgba(60,28,64,.88),rgba(18,16,48,.94));box-shadow:0 0 28px rgba(230,75,216,.22),inset 0 0 34px rgba(255,154,61,.08)}
+.ev::before{border-color:var(--orange)}
+.ev .tagc{display:inline-block;font-size:.72rem;letter-spacing:.1em;border:1px solid var(--orange);color:var(--orange);border-radius:99px;padding:1px 12px}
+.ev h2{margin:8px 0 6px;font:900 clamp(1.9rem,7vw,2.5rem)/1.15 var(--sans);letter-spacing:.06em;text-wrap:balance;
+  background:linear-gradient(180deg,#FFFFFF,#FFD08A 70%,#FF9A3D);-webkit-background-clip:text;background-clip:text;color:transparent;filter:drop-shadow(0 0 8px rgba(255,154,61,.5))}
+.ev p{margin:0;color:#D7DDF2}
+.steps{margin:0;padding-left:1.3em;color:var(--muted);font-size:.9rem;display:grid;gap:2px}
+.tally{display:grid}
+.tally .t{display:grid;grid-template-columns:1fr auto;gap:4px 12px;align-items:center;padding:10px 0;border-bottom:1px solid var(--line)}
+.tally .t:last-child{border-bottom:0}
+.tally .t b{font-size:1rem}
+.tally .t b i{font:700 .95rem var(--disp);font-style:normal;color:var(--cyan);margin-left:4px}
+.tally .t small{color:var(--muted);display:block;line-height:1.35}
+.stepper{display:flex;align-items:center;gap:10px}
+.stepper button{width:42px;height:42px;border-radius:8px;border:1px solid rgba(61,224,245,.45);background:rgba(8,12,34,.8);cursor:pointer;font-size:1.25rem;line-height:1}
+.stepper button:hover:not(:disabled){border-color:var(--cyan);box-shadow:0 0 10px rgba(61,224,245,.5)}
+.stepper button:disabled{opacity:.3;cursor:not-allowed}
+.stepper output{min-width:1.4em;text-align:center;font:900 1.3rem var(--disp);font-variant-numeric:tabular-nums}
+.cap{font-size:.85rem;color:var(--muted);margin:0}
+.total{font-size:1.05rem}
+.total b{font:900 1.8rem var(--disp);color:var(--good);text-shadow:0 0 12px rgba(95,227,161,.6);margin:0 4px}
+.mini{display:grid;grid-template-columns:20px repeat(4,minmax(0,1fr));gap:5px;max-width:300px}
+.mini .lbl{font:700 .72rem var(--disp);color:var(--muted);display:grid;place-items:center;min-height:18px}
+.mini .lbl.hl{color:var(--cyan)}
+.mini .c{aspect-ratio:1/1;border-radius:5px;background:rgba(8,12,34,.85);border:1px solid rgba(61,224,245,.18)}
+.mini .c.on{background:rgba(61,224,245,.9);border-color:var(--cyan);box-shadow:0 0 12px rgba(61,224,245,.8)}
+
+.log{font-size:.85rem;color:var(--muted);display:grid;gap:3px;padding-left:0;list-style:none;margin:0}
+.log li:first-child{color:var(--ink)}
+.foot{text-align:center;font-size:.78rem;color:var(--muted);letter-spacing:.14em}
+.foot b{font:700 .68rem var(--disp);color:var(--cyan);letter-spacing:.2em;margin-right:8px}
+
+/* 彈出視窗 */
+.overlay{position:fixed;inset:0;background:rgba(4,6,20,.78);display:grid;place-items:center;z-index:20;
+  padding:max(16px,env(safe-area-inset-top,0px)) max(16px,env(safe-area-inset-right,0px)) max(16px,env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px))}
+.sheet{position:relative;background:linear-gradient(160deg,#171F4A,#0E1235);color:var(--ink);border:1px solid var(--cyan);border-radius:12px;padding:20px;width:100%;max-width:680px;max-height:88vh;overflow:auto;display:grid;gap:12px;box-shadow:0 0 36px rgba(61,224,245,.3)}
+.sheet h2{font:900 1.5rem var(--sans);letter-spacing:.06em;margin:0;color:#fff;text-shadow:0 0 10px rgba(61,224,245,.5)}
+.sheet h4{margin:8px 0 0;font-size:.95rem;color:var(--cyan);letter-spacing:.06em}
+.sheet ul,.sheet ol{margin:0;padding-left:1.3em;display:grid;gap:3px}
+.tbl{overflow-x:auto}
+table{border-collapse:collapse;width:100%;font-size:.9rem}
+th,td{border-bottom:1px solid var(--line);padding:7px 8px;text-align:left;vertical-align:top}
+th{color:var(--orange);font-weight:700;white-space:nowrap}
+
+/* 設定畫面 */
+.setup{max-width:520px;width:100%;margin:0 auto;display:grid;gap:16px}
+.setup h2{font:900 1.35rem var(--sans);margin:0 0 4px;letter-spacing:.06em}
+.seg{display:flex;gap:8px}
+.seg .btn{flex:1}
+.seg .btn.on{background:linear-gradient(120deg,#2EE6F5,#6C8CFF);color:#06101F;border-color:transparent;box-shadow:0 0 16px rgba(61,224,245,.5)}
+.names{display:grid;gap:8px}
+.names input{font:inherit;padding:10px 12px;border-radius:8px;border:1px solid var(--line);background:rgba(6,9,28,.9);color:var(--ink);width:100%;min-width:0}
+.names input:focus-visible{outline:2px solid var(--cyan);outline-offset:1px}
+.rank{display:grid;gap:6px;list-style:none;padding:0;margin:0}
+.rank li{display:flex;justify-content:space-between;gap:12px;padding:9px 12px;border:1px solid var(--line);border-radius:8px}
+.rank li.win{border-color:var(--good);box-shadow:0 0 12px rgba(95,227,161,.35)}
+.rank b{font:700 1rem var(--disp);font-variant-numeric:tabular-nums}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+
+<div class="wrap" id="app"></div>
+
+<script>
+const EVENTS=[
+ {id:'pause',name:'暫停出牌',tag:'無法放牌',fx:'本回合不能放置卡牌。從牌庫抽 1 張新牌,再從手牌棄掉 1 張。'},
+ {id:'ban',name:'禁止行動',tag:'干擾對手',fx:'指定一名對手,使其下一回合跳過一次。你仍可正常放牌。'},
+ {id:'supply',name:'額外補給',tag:'抽牌',fx:'從牌庫額外抽 2 張牌,再從手牌選 1 張棄掉,然後正常放牌。'},
+ {id:'reselect',name:'重新選擇',tag:'換牌',fx:'棄掉手牌中的 1 張牌,再抽 1 張,然後正常放牌。'},
+ {id:'limit',name:'位置限制',tag:'限制位置',fx:'本回合只能把卡牌放在指定橫列或直欄的相鄰空格。'},
+ {id:'double',name:'得分加倍',tag:'加分',fx:'本回合得到的分數加倍(記分時自動 ×2)。'},
+ {id:'reverse',name:'反轉策略',tag:'限制位置',fx:'本回合優先選擇目前較不容易形成高分牌型的位置。可看該空格所在的列與欄,選最難湊出順子或同花的那一格。'},
+ {id:'free',name:'自由行動',tag:'放寬位置',fx:'本回合可以選擇任意一個與已放置卡牌相鄰的空格,不受單一方向限制(含斜角)。'}
+];
+const PATS=[
+ {k:'pair',name:'對子',cond:'2 張數字相同',pts:1},
+ {k:'straight',name:'順子',cond:'3 張數字連續,不限排列順序',pts:3},
+ {k:'flush',name:'同花',cond:'3 張花色相同',pts:4},
+ {k:'four',name:'鐵支',cond:'4 張數字相同',pts:6}
+];
+const COLS='ABCD';
+const esc=s=>String(s).replace(/[&<>"]/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[m]));
+const $app=document.getElementById('app');
+let G={phase:'setup',n:2,names:['','','',''],showRules:false,showResult:false};
+const cur=()=>G.players[G.cur];
+const emptyTally=()=>({pair:0,straight:0,flush:0,four:0});
+const tallyCount=()=>Object.values(G.tally).reduce((a,b)=>a+b,0);
+const basePts=()=>PATS.reduce((s,x)=>s+G.tally[x.k]*x.pts,0);
+const turnPts=()=>{const b=basePts();return G.double&&b>0?b*2:b};
+function logIt(s){G.log.unshift(s);G.log=G.log.slice(0,6)}
+function lineName(l){return l.t==='r'?`第 ${l.k+1} 列`:`第 ${COLS[l.k]} 欄`}
+
+function startGame(){
+  const players=[...Array(G.n)].map((_,i)=>({name:(G.names[i]||'').trim()||`玩家 ${i+1}`,score:0,skip:false}));
+  G={...G,phase:'handoff',players,cur:0,turnNo:1,event:null,restrict:null,double:false,tally:emptyTally(),
+     log:['遊戲開始。'],showResult:false};
+  render();
+}
+function beginTurn(){
+  const p=cur(),ev=EVENTS[Math.floor(Math.random()*EVENTS.length)];
+  G.event=ev;G.restrict=null;G.double=false;G.tally=emptyTally();
+  logIt(`${p.name} 抽到「${ev.name}」。`);
+  if(ev.id==='ban')G.phase='target';
+  else{
+    if(ev.id==='limit'){const k=Math.floor(Math.random()*8);G.restrict={t:k<4?'r':'c',k:k%4}}
+    if(ev.id==='double')G.double=true;
+    G.phase='play';
+  }
+  render();
+}
+function pickTarget(t){
+  G.players[t].skip=true;
+  logIt(`${cur().name} 指定 ${G.players[t].name} 下回合跳過。`);
+  G.phase='play';render();
+}
+function tallyAdj(k,d){
+  const v=G.tally[k]+d;
+  if(v<0||(d>0&&tallyCount()>=2))return;
+  G.tally[k]=v;render();
+}
+function finishTurn(){
+  const p=cur(),pts=turnPts();
+  const parts=PATS.filter(x=>G.tally[x.k]).map(x=>`${x.name}${G.tally[x.k]>1?' ×'+G.tally[x.k]:''}`);
+  p.score+=pts;
+  logIt(pts?`${p.name} 得 ${pts} 分(${parts.join('、')}${G.double?',加倍':''})。`:`${p.name} 本回合沒有得分。`);
+  advance();
+}
+function advance(){
+  G.cur=(G.cur+1)%G.players.length;G.turnNo++;G.phase='handoff';G.event=null;G.restrict=null;G.double=false;G.tally=emptyTally();
+  render();
+}
+function skipTurn(){
+  const p=cur();p.skip=false;logIt(`${p.name} 被禁止行動,本回合跳過。`);advance();
+}
+function adjScore(i,d){G.players[i].score=Math.max(0,G.players[i].score+d);render()}
+
+function headerHTML(){
+  const big=G.phase==='setup';
+  return `<header class="hero ${big?'big':''}"><div class="plate">
+    <div class="suits" aria-hidden="true"><span class="r">♦</span><span class="b">♣</span><span class="b">♠</span><span class="r">♥</span></div>
+    <h1>撲克微陣</h1>${big?'<div class="en">POKER MICRO-FORMATION</div>':''}<div class="tag">策略微操 · 佈局對決</div></div>
+  <div class="tools"><button class="btn sm" data-act="rules">規則與牌型</button>${big?'':'<button class="btn sm" data-act="result">結算</button><button class="btn sm" data-act="again">重新開始</button>'}</div></header>`;
+}
+function footHTML(){return `<footer class="foot"><b>CARD STRATEGY</b>策略卡牌遊戲 · 微陣工作室</footer>`}
+function setupHTML(){
+  let names='';
+  for(let i=0;i<G.n;i++)names+=`<input class="nmin" id="pn${i}" data-i="${i}" maxlength="10" placeholder="玩家 ${i+1}" value="${esc(G.names[i])}" aria-label="玩家 ${i+1} 名稱">`;
+  return headerHTML()+`<div class="setup panel">
+    <div><h2>開始新遊戲</h2>
+    <p style="margin:0;color:var(--muted)">用實體撲克牌在 4×4 方格排牌。這個頁面負責抽事件牌、顯示效果、記分和排出回合順序。</p></div>
+    <div><span class="label">PLAYERS · 玩家人數</span>
+    <div class="seg">${[2,3,4].map(n=>`<button class="btn ${G.n===n?'on':''}" data-act="count" data-n="${n}">${n} 人</button>`).join('')}</div></div>
+    <div class="names">${names}</div>
+    <button class="btn primary" data-act="start">開始遊戲</button></div>`+footHTML()+(G.showRules?rulesHTML():'');
+}
+function scoreHTML(){
+  return `<div class="scores">${G.players.map((p,i)=>`<div class="pl ${i===G.cur?'cur':''}">
+    ${i===G.cur?'<span class="now">TURN</span>':''}
+    <span class="nm">${esc(p.name)}</span><span class="sc">${p.score}</span>
+    <span class="fl">${p.skip?'下回合跳過':''}</span>
+    <span class="adj"><button data-act="adj" data-i="${i}" data-d="-1" aria-label="${esc(p.name)} 減 1 分">−</button><button data-act="adj" data-i="${i}" data-d="1" aria-label="${esc(p.name)} 加 1 分">+</button></span></div>`).join('')}</div>`;
+}
+function miniBoard(l){
+  let h='<div class="mini"><span></span>';
+  for(let c=0;c<4;c++)h+=`<span class="lbl ${l.t==='c'&&l.k===c?'hl':''}">${COLS[c]}</span>`;
+  for(let r=0;r<4;r++){
+    h+=`<span class="lbl ${l.t==='r'&&l.k===r?'hl':''}">${r+1}</span>`;
+    for(let c=0;c<4;c++)h+=`<span class="c ${(l.t==='r'&&l.k===r)||(l.t==='c'&&l.k===c)?'on':''}"></span>`;
+  }
+  return h+'</div>';
+}
+function turnHTML(){
+  const p=cur();
+  let h=`<div class="panel prompt"><div class="turn">第 ${G.turnNo} 回合 · 輪到 <b>${esc(p.name)}</b></div>`;
+  if(G.phase==='handoff'){
+    if(p.skip)h+=`<p>${esc(p.name)} 被禁止行動,本回合跳過。</p><button class="btn primary" data-act="skip">確認,換下一位</button>`;
+    else h+=`<p>準備好後抽事件牌,再依指示操作實體撲克牌。</p><button class="btn primary" data-act="begin">抽取事件牌</button>`;
+  }else if(G.phase==='target'){
+    h+=`<p>選擇一名對手,他的下一回合會被跳過。</p><div class="row">${G.players.map((q,i)=>i===G.cur?'':`<button class="btn" data-act="target" data-i="${i}">${esc(q.name)}</button>`).join('')}</div>`;
+  }else if(G.phase==='play'){
+    const noScore=G.event.id==='pause';
+    h+=noScore?`<p>完成抽牌與棄牌後,按下結束回合。</p>`
+      :`<ol class="steps"><li>依事件牌效果操作。</li><li>把 1 張手牌放在相鄰空格。</li><li>檢查該牌所在的列與欄,在下方記錄得到的牌型。</li><li>把得分的牌從棋盤收回,手牌補到 4 張。</li></ol>`;
+    if(!noScore){
+      h+=`<div class="tally" aria-label="本回合牌型">${PATS.map(x=>`<div class="t"><div><b>${x.name}<i>+${x.pts}</i></b><small>${x.cond}</small></div>
+        <div class="stepper"><button data-act="tally" data-k="${x.k}" data-d="-1" ${G.tally[x.k]?'':'disabled'} aria-label="${x.name} 減一">−</button><output>${G.tally[x.k]}</output><button data-act="tally" data-k="${x.k}" data-d="1" ${tallyCount()>=2?'disabled':''} aria-label="${x.name} 加一">+</button></div></div>`).join('')}</div>
+        <p class="cap">一個回合最多記 2 個牌型(橫列一個、直欄一個)。</p>
+        <div class="total">本回合<b>${turnPts()}</b>分${G.double&&basePts()>0?`(${basePts()} ×2)`:''}</div>`;
+    }
+    h+=`<button class="btn primary" data-act="finish">結束回合,換下一位</button>`;
+  }
+  return h+'</div>';
+}
+function eventHTML(){
+  if(!G.event||G.phase==='handoff')return '';
+  let h=`<div class="panel ev"><span class="tagc">${G.event.tag}</span><h2>${G.event.name}</h2><p>${G.event.fx}</p>`;
+  if(G.restrict&&G.phase==='play')h+=`<div style="margin-top:14px">${miniBoard(G.restrict)}<p class="cap" style="margin-top:8px">本回合指定:<b style="color:#fff">${lineName(G.restrict)}</b>(亮色的格子)</p></div>`;
+  return h+'</div>';
+}
+function logHTML(){return `<div class="panel"><span class="label">LOG · 最近紀錄</span><ul class="log">${G.log.map(l=>`<li>${esc(l)}</li>`).join('')}</ul></div>`}
+function resultHTML(){
+  const sorted=[...G.players].sort((a,b)=>b.score-a.score),top=sorted[0].score;
+  const winners=sorted.filter(p=>p.score===top);
+  return `<div class="overlay"><div class="sheet"><h2>目前結算</h2>
+  <p style="margin:0">${winners.length>1?'共同領先:':'領先:'}<b>${winners.map(p=>esc(p.name)).join('、')}</b>(${top} 分)</p>
+  <ul class="rank">${sorted.map(p=>`<li class="${p.score===top?'win':''}"><span>${esc(p.name)}</span><b>${p.score} 分</b></li>`).join('')}</ul>
+  <div class="row"><button class="btn" data-act="result">返回遊戲</button><button class="btn primary" data-act="again">再玩一局</button></div></div></div>`;
+}
+function rulesHTML(){
+  return `<div class="overlay"><div class="sheet" role="dialog" aria-label="規則與牌型"><h2>規則與牌型</h2>
+  <h4>準備</h4>
+  <ul><li>一副 52 張撲克牌(不含鬼牌),在桌上畫出或排出 4×4 方格。</li><li>洗牌後,先放 1 張起始牌在中央四格之一,每位玩家發 4 張手牌,其餘為牌庫。</li><li>本頁負責抽事件牌與記分。</li></ul>
+  <h4>每回合流程</h4>
+  <ol><li>在本頁抽事件牌,依指示操作。</li><li>從手牌選一張,放在已有牌的上下左右相鄰空格。</li><li>檢查該牌所在的列與欄,組成牌型就在本頁記分,構成牌型的牌從棋盤收回。</li><li>手牌補到 4 張,換下一位。</li></ol>
+  <h4>牌型</h4>
+  <div class="tbl"><table>${PATS.map(x=>`<tr><th>${x.name}</th><td>${x.cond}</td><td>${x.pts} 分</td></tr>`).join('')}</table></div>
+  <p style="margin:0;color:var(--muted);font-size:.9rem">A=1,J=11,Q=12,K=13。A 只當 1,不能接在 K 後面。</p>
+  <h4>事件牌</h4>
+  <div class="tbl"><table>${EVENTS.map(e=>`<tr><th>${e.name}</th><td>${e.fx}</td></tr>`).join('')}</table></div>
+  <h4>本版規則設定</h4>
+  <ul><li>每條列或欄只計最高的一種牌型。構成牌型的牌離開棋盤,由得分玩家收回,不會回到手牌。</li><li>對子 2 張就會成立並被收回,所以同一列或欄幾乎湊不出鐵支。</li><li>同一張牌同時影響橫列與直欄時,兩條各自計分。</li><li>得分加倍:本回合所有得分 ×2。</li><li>被禁止行動的玩家跳過該回合,不補牌。</li><li>牌庫抽完或棋盤放滿時,該回合結束後按「結算」。最高分獲勝,同分共同獲勝。</li><li>若棋盤上的牌被收空,下一張牌可放在中央四格之一。</li><li>放錯位置或判斷錯誤時,經其他玩家確認後重放,或用計分板的 + / − 修正分數。</li></ul>
+  <div class="row"><button class="btn primary" data-act="rules">關閉</button></div></div></div>`;
+}
+function render(){
+  if(G.phase==='setup'){$app.innerHTML=setupHTML();return}
+  $app.innerHTML=headerHTML()
+    +`<div class="layout"><div class="a-scores">${scoreHTML()}</div><div class="a-main">${eventHTML()}${turnHTML()}</div><div class="a-log">${logHTML()}</div></div>`
+    +footHTML()+(G.showResult?resultHTML():'')+(G.showRules?rulesHTML():'');
+}
+
+document.addEventListener('click',e=>{
+  const t=e.target.closest('[data-act]');if(!t||t.disabled)return;
+  const a=t.dataset.act,i=+t.dataset.i,d=+t.dataset.d;
+  if(a==='rules'){G.showRules=!G.showRules;render()}
+  else if(a==='count'){G.n=+t.dataset.n;render()}
+  else if(a==='start')startGame();
+  else if(a==='begin')beginTurn();
+  else if(a==='skip')skipTurn();
+  else if(a==='target')pickTarget(i);
+  else if(a==='tally')tallyAdj(t.dataset.k,d);
+  else if(a==='finish')finishTurn();
+  else if(a==='adj')adjScore(i,d);
+  else if(a==='result'){G.showResult=!G.showResult;render()}
+  else if(a==='again'){G.phase='setup';G.showRules=false;G.showResult=false;render()}
+});
+document.addEventListener('input',e=>{
+  if(e.target.classList.contains('nmin'))G.names[+e.target.dataset.i]=e.target.value;
+});
+render();
+</script>
+
+</body></html>
